@@ -756,30 +756,31 @@ UP主：{video_info.get('up_name') or video_info.get('owner_name', '未知')}
                 return None
             frames = None
             storyboard = await self._storyboard_content(seg_path, text_prompt)
+            seg_len = float(length or 30.0)
+            extra = {"system_prompt": system_prompt} if system_prompt else {}
             if storyboard:
+                # 宫格图与分镜时间码已经在 content 里，不能再按逐帧路径重建或清空。
                 frame_content, board = storyboard
+                result = await self.vision._astrbot_multimodal_generate(provider_id, frame_content, max_tokens=1500)
             else:
                 count = 5
                 frames = await self.video_files._extract_video_frames(seg_path, count=count)
                 if not frames:
                     media_failure(video_info, "frames", "没有提取到视频画面", self.config)
                     return None
-            seg_len = float(length or 30.0)
-            frame_content = []
-            notes = []
-            for i, frame_path in enumerate(frames):
-                with open(frame_path, "rb") as f:
-                    img_b64 = base64.b64encode(f.read()).decode()
-                frame_content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}})
-                notes.append(f"第{i+1}张约在这段第 {int(seg_len * (i + 1) / (count + 1))} 秒")
-            lines = await self._timed_subtitles(video_info)
-            subtitle = format_subtitle_lines(lines, offset, offset + seg_len if length else None, limit=1500)
-            subtitle = subtitle and "\n这段的字幕（B站的，时间是原视频的；可能不准，跟画面明显对不上就别用）：\n" + wrap_untrusted(subtitle, "subtitles")
-            frame_prompt = text_prompt.replace(hears, "这次只有几张截图，听不到声音，audio 写「听不到」。")
-            if storyboard:
-                result = await self.vision._astrbot_multimodal_generate(provider_id, frame_content, max_tokens=450)
-            else:
-                extra = {"system_prompt": system_prompt} if system_prompt else {}
+                frame_content = []
+                notes = []
+                for i, frame_path in enumerate(frames):
+                    with open(frame_path, "rb") as f:
+                        img_b64 = base64.b64encode(f.read()).decode()
+                    frame_content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}})
+                    notes.append(f"第{i+1}张约在这段第 {int(seg_len * (i + 1) / (count + 1))} 秒")
+                lines = await self._timed_subtitles(video_info)
+                subtitle = format_subtitle_lines(lines, offset, offset + seg_len if length else None, limit=1500)
+                subtitle = subtitle and "\n这段的字幕（B站的，时间是原视频的；可能不准，跟画面明显对不上就别用）：\n" + wrap_untrusted(subtitle, "subtitles")
+                frame_prompt = text_prompt.replace(hears, "这次只有几张截图，听不到声音，audio 写「听不到」。")
+                # 只发图模型会返回空内容，这里必须把文字提示和字幕一起带上。
+                frame_content.append({"type": "text", "text": f"{frame_prompt}\n\n截图：{'；'.join(notes)}。{subtitle}"})
                 result = await self.vision._astrbot_multimodal_generate(provider_id, frame_content, max_tokens=self._SEGMENT_MAX_TOKENS, **extra)
             if not result and client and model:
                 result = await self.vision._vision_call(client, model, frame_content, max_tokens=self._SEGMENT_MAX_TOKENS, **extra)

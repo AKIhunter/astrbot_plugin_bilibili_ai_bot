@@ -49,7 +49,7 @@ const state = {
   gallery: {},
   today: {},
   todayDate: "",
-  browse: { range: "today", includeFailed: false, data: { items: [], counts: {} }, detail: null, expanded: new Set() },
+  browse: { range: "today", data: { items: [], counts: {} }, detail: null, expanded: new Set() },
   interest: {},
   security: {},
   cache: {},
@@ -839,7 +839,7 @@ async function refreshPageData(page) {
     state.today = await apiGet("today", state.todayDate ? { date: state.todayDate } : {}) || {};
     state.todayDate = state.today.date || "";
   } else if (page === "browse") {
-    state.browse.data = await apiGet("browse/log", { range: state.browse.range || "today", include_failed: state.browse.includeFailed ? 1 : 0 }) || { items: [], counts: {} };
+    state.browse.data = await apiGet("browse/log", { range: state.browse.range || "today", include_failed: 1 }) || { items: [], counts: {} };
   } else if (page === "account") {
     state.account = await apiGet("account/info") || {};
   } else if (page === "interaction") {
@@ -2413,11 +2413,10 @@ function renderBrowse() {
   const items = Array.isArray(data.items) ? data.items : [];
   const range = data.range || state.browse.range || "today";
   const tabs = [["today", "今日"], ["yesterday", "昨日"], ["7d", "近7天"]];
-  return `${pageHead("BROWSE", "浏览日志", "看过的视频、当时的想法和留下的评论，按时间倒序；同一视频只保留最新一次记录。", button("刷新", "refresh-browse", "refresh"))}
+  return `${pageHead("BROWSE", "浏览日志", "看过的视频、当时的想法和留下的评论，按时间倒序；同一视频只保留最新一次记录；评价失败标红显示。", button("刷新", "refresh-browse", "refresh"))}
     <section class="browse-toolbar">
       <div class="browse-tabs">${tabs.map(([key, label]) => `<button class="browse-tab ${range === key ? "is-active" : ""}" data-browse-range="${key}" type="button" aria-selected="${range === key}">${esc(label)}</button>`).join("")}</div>
       <div class="browse-toolbar-right">
-        <button class="browse-failed-toggle ${state.browse.includeFailed ? "is-active" : ""}" data-action="browse-toggle-failed" type="button">${icon("lightning")}含评价失败 ${fmt(counts.failed)}</button>
         <span class="browse-range-caption">${esc(data.start || "")} → ${esc(data.end || "")}</span>
       </div>
     </section>
@@ -3045,11 +3044,6 @@ async function handleAction(action, source = null) {
   if (action === "refresh-browse") return refreshAndRender("browse", "浏览日志已刷新");
   if (action === "browse-detail-replies") return openBrowseDetail("replies");
   if (action === "browse-detail-failed") return openBrowseDetail("failed");
-  if (action === "browse-toggle-failed") {
-    state.browse.includeFailed = !state.browse.includeFailed;
-    await refreshAndRender("browse", "");
-    return;
-  }
   if (action === "today-now") { state.todayDate = ""; return refreshAndRender("today", "回到今天"); }
   if (action === "delete-comment") return deleteTodayComment(source?.dataset.rpid || "");
   if (action === "refresh-security") return refreshAndRender("security", "安全审计已刷新");

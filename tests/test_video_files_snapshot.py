@@ -11,7 +11,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from test_autonomous_ranges import _install_astrbot_stub
 
@@ -127,6 +127,9 @@ class VideoFilesSnapshotTests(unittest.IsolatedAsyncioTestCase):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(b"x" * size)
             patches = _temp_dir_patches(folder)
+            # 直连下载快照不消费 CDN 元数据预检的脚本结果；CDN 使用独立场景。
+            patches.append(patch.object(probe.video_files, "_download_via_reachable_cdn",
+                                        AsyncMock(return_value=None)))
             for item in patches:
                 item.start()
             try:

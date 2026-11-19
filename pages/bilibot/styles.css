@@ -1569,7 +1569,7 @@ button:disabled { cursor: wait; opacity: .58; transform: none !important; }
 .browse-item { padding: 16px 18px; border: 1px solid var(--line); border-left: 3px solid rgba(76,131,237,.45); border-radius: 16px; background: var(--surface-soft); transition: box-shadow .2s, transform .2s; }
 .browse-item:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(38,51,80,.07); }
 .browse-item.tone-green { border-left-color: #43a979; }
-.browse-item.tone-red { border-left-color: #d95d6c; }
+.browse-item.tone-red { border-left-color: #d95d6c; background: rgba(217,93,108,.05); }
 .browse-item.tone-blue { border-left-color: #4c83ed; }
 .browse-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
 .browse-time { color: var(--muted); font-size: 10px; font-weight: 750; letter-spacing: .04em; }

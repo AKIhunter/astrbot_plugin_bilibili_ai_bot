@@ -104,6 +104,17 @@ class ProactiveBrowse(HostView):
             taste_tids = list(self.video_discovery.FALLBACK_TIDS)
             logger.info("[BiliBot] 🎯 口味数据不足，使用兜底分区")
         logger.info(f"[BiliBot] 📋 共找到 {len(unique)} 个视频")
+        if not unique:
+            # 0 候选也要留痕：否则定时触发后既没有看片记录也没有 WARN，看起来像“日志丢了”。
+            logger.warning("[BiliBot] 🫙 本轮 0 个候选视频，空跑结束")
+            self.activity_logs.trigger.append({
+                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "type": "proactive_video",
+                "scheduled": "manual" if is_manual else "",
+                "status": "empty",
+                "detail": "0 candidates",
+            })
+            return
         watch_round.comment_count = self.watch_video._today_proactive_comment_count(
             watch_log, self.activity_logs.proactive.recent()
         )

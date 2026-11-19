@@ -7,7 +7,9 @@ controls its own API stub and temporary data directory.
 """
 
 import importlib
+from pathlib import Path
 import sys
+import tempfile
 import types
 
 
@@ -86,3 +88,10 @@ def _install_logger_fallback():
 
 
 _install_logger_fallback()
+
+# Focused video tests may be collected before legacy tests install StarTools.
+# Always resolve plugin data into a disposable test directory, never production.
+_test_data = tempfile.TemporaryDirectory(prefix="bilibot-offline-")
+_star = types.ModuleType("astrbot.api.star")
+_star.StarTools = types.SimpleNamespace(get_data_dir=lambda _name: Path(_test_data.name))
+sys.modules[_star.__name__] = _star

@@ -320,7 +320,9 @@ SCENES = {
 
 def _normalize(value, folder):
     text = json.dumps(value, ensure_ascii=False, default=lambda o: f"<{type(o).__name__}>")
-    text = text.replace(folder, "<DIR>")
+    # macOS /tmp 与 /private/tmp 是同一目录，先替换更长的物理路径。
+    for path in sorted({folder, str(Path(folder).resolve())}, key=len, reverse=True):
+        text = text.replace(path, "<DIR>")
     text = re.sub(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?", "<TIME>", text)
     # 临时目录名是随机的。
     text = re.sub(r"inspection_[A-Za-z0-9_]+", "inspection_<RANDOM>", text)

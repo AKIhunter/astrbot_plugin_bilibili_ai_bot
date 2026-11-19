@@ -18,7 +18,7 @@ import tempfile
 import unittest
 import uuid
 from contextlib import ExitStack
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -52,7 +52,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "legacy_data"
 SNAPSHOT_FILE = ROOT / "tests" / "snapshots" / "memory.json"
 READERS = ["bili_comment", "bili_dm", "bili_live", "proactive", "qq_group", "qq_private", "admin"]
-NOW = datetime(2026, 11, 3, 9, 30)
+NOW = datetime(2026, 11, 3, 9, 30, tzinfo=timezone(timedelta(hours=8)))
 FILE_KEYS = {
     "MEMORY_FILE": "memory.json",
     "MEMORY_SYNC_STATE_FILE": "memory_sync_state.json",
@@ -78,7 +78,15 @@ SMALL_LIMITS = {
 class _FrozenDatetime(datetime):
     @classmethod
     def now(cls, tz=None):
-        return cls(NOW.year, NOW.month, NOW.day, NOW.hour, NOW.minute)
+        value = NOW.astimezone(tz) if tz is not None else NOW
+        # timestamp 不随测试机器时区漂移，字符串日期仍与既有样例一致。
+        return cls(value.year, value.month, value.day, value.hour, value.minute,
+                   tzinfo=value.tzinfo if tz is not None else None)
+
+    def timestamp(self):
+        return datetime(self.year, self.month, self.day, self.hour, self.minute,
+                        self.second, self.microsecond,
+                        tzinfo=self.tzinfo or NOW.tzinfo).timestamp()
 
 
 def _embed(text):

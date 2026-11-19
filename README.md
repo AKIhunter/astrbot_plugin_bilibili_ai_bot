@@ -1,10 +1,12 @@
 # astrbot_plugin_bilibili_ai_bot
 
+![BiliBot](.github/img/Banner.png)
+
 B站 AI Bot 插件 for [AstrBot](https://github.com/AstrBotDevs/AstrBot) — 让你的 AI 角色在 B 站评论区”活”起来。
 
 从 2.0.0 起，插件围绕 Bot 的一天重新组织：睡醒、排日程、刷视频、回评论、记东西、夜里整理记忆。旧版本的配置和数据升级后照常可用。
 
-## ✨ 功能
+## ✨ 能做什么
 
 ### 💬 评论与互动
 
@@ -471,3 +473,15 @@ core/
 
 - 修改本插件并通过网络向他人提供服务（例如部署成公开 Bot）时，需要向使用者提供修改后的完整源代码。
 - `assets/fonts/` 中的字体按其自带的 [SIL Open Font License](assets/fonts/OFL.txt) 授权。
+
+## 2.3.2 更新日志
+
+预置与边界修复的用法见[本版说明](docs/stability-2.3.2.md)，变化见[更新日志](CHANGELOG.md)。
+
+## 第一次使用与兼容性
+
+沿用上方安装与配置步骤；升级保留账号、模型和历史数据，先备份后更新。
+
+## 常见问题与使用指令
+
+视频下载、分镜与文字不足时的降级行为见[本版说明](docs/stability-2.3.2.md)。命令与配置入口沿用上方使用指南。

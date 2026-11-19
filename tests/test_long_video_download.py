@@ -1,7 +1,7 @@
 import asyncio
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from video_parts import VideoParts
 
@@ -18,7 +18,9 @@ class Probe(VideoParts):
 
 
 def download(probe, **kwargs):
-    with tempfile.TemporaryDirectory() as directory, patch("core.infra.video_files.TEMP_VIDEO_DIR", directory):
+    with tempfile.TemporaryDirectory() as directory, patch("core.infra.video_files.TEMP_VIDEO_DIR", directory), \
+            patch.object(probe.video_files, "_download_via_reachable_cdn",
+                         AsyncMock(return_value=None)):
         return asyncio.run(probe.video_files._download_video("BV1TEST12345", **kwargs))
 
 

@@ -514,6 +514,7 @@ def _check_concrete_preference_signals_feed_search_fallback():
         ],
     }]
     probe = ProactiveProbe({"PROACTIVE_TASTE_WINDOW_DAYS": 7})
+    probe.video_discovery._preference_day = lambda *args, **kwargs: True
 
     fallback = probe.video_discovery._fallback_proactive_search_queries(history)
     summary = probe.taste._format_recent_preference_summary(history)

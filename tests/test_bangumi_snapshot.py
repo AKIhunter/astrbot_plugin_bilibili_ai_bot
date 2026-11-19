@@ -182,6 +182,12 @@ class Probe(BiliParts, VideoParts):
     async def _get_system_prompt(self):
         return "系统提示词"
 
+    async def get_danmaku(self, cid):
+        return []
+
+    async def _get_hot_comments(self, aid):
+        return []
+
     async def _generation_llm_call(self, prompt, system_prompt=None, max_tokens=None):
         self.calls.append(["evaluate", prompt, system_prompt, max_tokens])
         answer = self.replies.pop(0) if self.replies else reply()
@@ -334,6 +340,7 @@ def _normalize(value):
 class BangumiSnapshotTests(unittest.IsolatedAsyncioTestCase):
     async def _scene(self, script, call):
         probe = Probe(**copy.deepcopy(script))
+        # 番剧素材接口由 Probe 完全隔离，避免真实 HTTP 重试产生额外等待。
 
         async def no_wait(seconds):
             probe.calls.append(["sleep", seconds])

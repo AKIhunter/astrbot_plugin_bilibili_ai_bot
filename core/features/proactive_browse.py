@@ -163,10 +163,8 @@ class ProactiveBrowse(HostView):
         today_str = datetime.now().strftime("%Y-%m-%d")
         # 日限检查：所有来源（含手动/LLM触发）均计入总量
         today_watched = [l for l in watch_log if l.get("time", "").startswith(today_str)]
+        # 轮数上限只限制排期；这里按视频个数计算，0 表示全天不额外限量。
         daily_limit = max(0, int(self.settings.get("PROACTIVE_DAILY_LIMIT") or 0))
-        autonomous_limit = self.schedule_rules._autonomous_limit_max("proactive")
-        if autonomous_limit:
-            daily_limit = min(daily_limit, autonomous_limit) if daily_limit else autonomous_limit
         if daily_limit > 0 and len(today_watched) >= daily_limit:
             logger.info(f"[BiliBot] 今天已看 {len(today_watched)} 个视频（上限{daily_limit}），不再刷")
             return None, daily_comment_limit
